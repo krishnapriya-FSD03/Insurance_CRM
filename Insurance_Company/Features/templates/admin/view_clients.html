@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="table-responsive">
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert 
+                {% if message.tags == 'error' %}alert-danger
+                {% elif message.tags == 'success' %}alert-success
+                {% elif message.tags == 'info' %}alert-info
+                {% else %}alert-secondary{% endif %}
+                alert-dismissible fade show mt-3" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <h3 style="text-align: center;"> Agent Details </h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr class="table-dark">
+                <td>sl no</td>
+                <td>Profile Image</td>
+                <td>Name</td>
+                <td>Username</td>
+                <td>Specialisation</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in agents %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td><a href="{% url 'view_agent_profile' a.id %}"><img src="{{ a.profile_image.url }}"
+                            style="border-radius: 40px;" alt="" width="60" height="60"></a></td>
+                <td>{{ a.first_name }}</td>
+                <td>{{ a.username }}</td>
+                <td>{{ a.specialisation }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="campaign_view_container">
+
+    <style>
+        .camp-card{
+            display: flex;
+            height: 100%;
+            border-radius: 15px;
+            border:1px solid gray;
+            display:flex;
+            flex-direction: column;
+            gap:20px;
+            overflow: hidden;
+        }
+
+        .camp-card-img{
+            width: 100%;
+            height:200px;
+            overflow: hidden;
+        }
+        .camp-card-img img{
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .camp-card-body {
+            padding: 10px;
+            flex:1;
+        }
+    </style>
+
+    <h3 style="text-align: center;">View Campaigns</h3>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert 
+                {% if message.tags == 'error' %}alert-danger
+                {% elif message.tags == 'success' %}alert-success
+                {% elif message.tags == 'info' %}alert-info
+                {% else %}alert-secondary{% endif %}
+                alert-dismissible fade show mt-3" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    <div class="row">
+        {% for camp in campaign %}
+        <div class="col-md-4 mb-3">
+            <div class="camp-card shadow-sm">
+                <div class="camp-card-body">
+                    {% if camp.poster %}
+                    <img src="{{ camp.poster.url }}" alt="" class="camp-card-img img-fluid">
+                    {% else %}
+                    <p>Poster is not available at the moment</p>
+                    {% endif%}
+                    <h4 class="card-title">{{ camp.title }}</h4>
+                    <p class="card-text" style="text-align: center;">
+                        <strong>Location : </strong> {{ camp.location }}<br>
+
+                        <strong>Assigned Agent : </strong>{{ camp.assign_agents.first_name}} <br>
+
+                        <strong> Date : </strong>{{ camp.date }} <br>
+
+                        <strong> Time : </strong>{{ camp.time|time:'H:i' }} <br><br>
+
+                        <a href="{% url 'edit_campaign' camp.id %}" class="btn btn-success">Edit</a>
+                        <a href="{% url 'delete_campaign' camp.id %}" class="btn btn-danger">Delete</a>
+                        <a href="{% url 'view_camp_clients' camp.id %}" class="btn btn-info">View Clients</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

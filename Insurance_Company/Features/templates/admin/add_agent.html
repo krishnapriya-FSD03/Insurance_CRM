@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="agent-container">
+    <div class="page-title">
+        <h3>Add Agent Details</h3>
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert 
+                {% if message.tags == 'error' %}alert-danger
+                {% elif message.tags == 'success' %}alert-success
+                {% elif message.tags == 'info' %}alert-info
+                {% else %}alert-secondary{% endif %}
+                alert-dismissible fade show mt-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <form action="{% url 'add_agent_fun' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="">First name</label>
+            <input type="text" name="firstname" class="form-control"><br>
+            <label for="">Last name</label>
+            <input type="text" name="lastname" class="form-control"><br>
+            <label for="">Address</label>
+            <textarea name="address" class="form-control"></textarea><br>
+            <label for="">Contact</label>
+            <input type="tel" name="contact" id="contact" class="form-control">
+            <small id="contact-msg"></small>
+            <br>
+            <label for="">Email</label>
+            <input type="email" name="email" id="email" class="form-control">
+            <small id="email-msg"></small>
+
+            <br>
+            <label for="">Username</label>
+            <input type="text" name="username" id="username" class="form-control">
+            <small id="uname-msg"></small>
+            <br>
+            <label for="">Date of Birth</label>
+            <input type="date" name="dob" class="form-control"><br>
+            <label for="">Area Of Specialisation</label>
+            <select name="specialisation" class="form-select">
+                <option value="">Select An Option</option>
+                {% for s,special in specialisation %}
+                <option value="{{ s }}">{{ special }}</option>
+                {% endfor %}
+            </select><br>
+            <label for="">Profile Image</label>
+            <input type="file" name="profile" class="form-control"><br>
+
+            <button id="submit" class="btn btn-success">Save</button>
+
+        </form>
+
+    </div>
+</div>
+
+<script>
+
+    document.getElementById('username').addEventListener("keyup", function () {
+        let username = document.getElementById('username').value;
+        let msg = document.getElementById("uname-msg");
+        fetch(`/check_username/?username=${username}`)
+            .then(response => response.json())
+            .then(data => {
+
+                if (data.exists) {
+                    msg.innerHTML = 'Username already taken !!';
+                    msg.style.color = 'red';
+                }
+                else {
+                    msg.innerHTML = 'Username Available';
+                    msg.style.color = 'green';
+                }
+            });
+    });
+
+    document.getElementById('email').addEventListener("keyup", function () {
+        let email = document.getElementById('email').value;
+        let msg = document.getElementById("email-msg");
+        fetch(`/check_email/?email=${email}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    msg.innerHTML = "Email already exists !!";
+                    msg.style.color = 'red';
+                }
+
+                else if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]{5,}\.[A-Za-z]{2,}$/.test(email)) {
+                    msg.innerHTML = "Enter a valid Email";
+                    msg.style.color = 'red';
+                }
+
+                else {
+                    msg.innerHTML = "Valid!!"
+                    msg.style.color = 'green';
+                }
+            });
+    });
+
+    document.getElementById('contact').addEventListener("keyup", function () {
+        let contact = document.getElementById('contact').value;
+        let msg = document.getElementById('contact-msg');
+        fetch(`/check_contact/?contact=${contact}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    msg.innerHTML = 'Contact Number already exists!!'
+                    msg.style.color = 'red';
+                }
+
+                else if (!/^\d{10}$/.test(contact)) {
+                    msg.innerHTML = 'Contact must contain 10 digits!!';
+                    msg.style.color = 'red';
+                }
+                else {
+                    msg.innerHTML = 'Valid!!';
+                    msg.style.color = 'green';
+                }
+            })
+    })
+
+
+
+</script>
+
+{% endblock %}

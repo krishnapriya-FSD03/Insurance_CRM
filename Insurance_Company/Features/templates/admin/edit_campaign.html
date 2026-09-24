@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="campaign-container">
+
+    <h3 style="text-align: center;">Edit Campaign</h3> <br>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert 
+                {% if message.tags == 'error' %}alert-danger
+                {% elif message.tags == 'success' %}alert-success
+                {% elif message.tags == 'info' %}alert-info
+                {% else %}alert-secondary{% endif %}
+                alert-dismissible fade show mt-3" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+
+    <form action="" method="post" enctype="multipart/form-data">
+
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label>Title</label>
+                <input type="text" name="title" class="form-control" value="{{ campaign.title }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label>Location</label>
+                <input type="search" name="location" class="form-control" id="location" value="{{ campaign.location }}">
+                <button class="btn btn-primary" type="button" id="search" onclick="searchLocation()">Enter</button>
+
+                <input type="hidden" name="lat" value="{{ campaign.latitude }}" id="lat">
+                <input type="hidden" name="long" id="long" value="{{ campaign.longitude }}" id="long">
+                <div id="map" style="height: 200px;"></div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label>Poster</label>
+                <input type="file" name="poster" class="form-control">
+
+                <!-- <input type="file" name="poster" class="form-control"> -->
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="">Assign Agent</label>
+                <select name="agent" class="form-control">
+                    <option value=""> Select an agent </option>
+                    {% for agent in agent %}
+                    <option value="{{ agent.id }}" {% if campaign.assign_agents.id == agent.id %}selected{% endif %}>{{ agent.first_name }} {{ agent.last_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label>Date</label>
+                <input type="date" name="camp_date" class="form-control" value="{{ campaign.date|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="">Time</label>
+                <input type="time" name="camp_time" class="form-control" value="{{ campaign.time|time:'H:i' }}">
+            </div>
+        </div>
+
+        <div class="text-center">
+            <button class="btn btn-success" style="text-align: center;">Edit</button>
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+
+    // let map = L.map('map').setView([savedlat,savedlong], 7);
+
+    // let marker = L.marker([10.8505, 76.2711]).addTo(map);    
+
+    let map;
+    let marker;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const lat = parseFloat(document.getElementById('lat').value)
+        const lng = parseFloat(document.getElementById('long').value)
+        console.log(lat, lng)
+
+
+        const defaultLat = 10.8505;
+        const defaultLng = 76.2711;
+        const startLat = isNaN(lat) ? defaultLat : lat;
+        const startLng = isNaN(lng) ? defaultLng : lng;
+
+        map = L.map('map').setView([startLat, startLng], 9)
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+        marker = L.marker([startLat, startLng]).addTo(map)
+    })
+    function searchLocation() {
+        let location = document.getElementById('location').value.trim();
+        if (!location) {
+            alert("Please enter a location");
+            return;
+        }
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${location}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    map.setView([lat, lon], 13);
+                    marker.setLatLng([lat, lon]);
+                    document.getElementById('lat').value = lat;
+                    document.getElementById('long').value = lon;
+                } else {
+                    alert("Location Not found!!");
+                }
+            });
+    }
+    document.addEventListener("DOMContentLoaded",function () {
+        // const location=document.getElementById("location").value
+        document.getElementById('location').addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            searchLocation();
+        }
+        });
+    })
+    document.getElementById('search').addEventListener("click", function () {
+        searchLocation();
+    })
+</script>
+{% endblock %}

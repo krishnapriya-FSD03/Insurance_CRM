@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="profile">
+
+<h3 style="text-align: center;">Profile Details</h3>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} text-center">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+        <div class="text-center">
+            <img src="{{ agent.profile_image.url }}" class="profile-img" alt="">
+
+            <h3>
+                {{ agent.first_name }} {{ agent.last_name }}
+            </h3>
+        </div>
+
+        <div class="text-center">
+            <p><b>Username : </b>{{ agent.username }}</p>            
+            <p><b>Address : </b>{{ agent.Address}}</p>
+            <p><b>Date of Birth : </b>{{ agent.dob }}</p>            
+            <p><b>Email : </b>{{ agent.email }}</p>
+            <p><b>Contact No :</b>{{ agent.contact }}</p>
+            <p><b>Specialisation : </b>{{ agent.specialisation }}</p>
+        </div>
+
+        <div class="text-center">
+            <a href="{% url 'edit_profile' agent.id %}" class="btn btn-success">Edit</a>
+            <!-- <a href="{% url 'delete_agent' agent.id %}" class="btn btn-danger">Delete</a> -->
+            <!-- <a href="" class="btn btn-info">View Clients</a> -->
+        </div>
+
+    </div>
+
+{% endblock %}

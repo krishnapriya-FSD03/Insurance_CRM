@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <div class="edit_container">
+        <div class="page-title">
+            <h3 style="text-align: center;">Edit my Details</h3>
+            <br><br>
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert 
+                {% if message.tags == 'error' %}alert-danger
+                {% elif message.tags == 'success' %}alert-success
+                {% elif message.tags == 'info' %}alert-info
+                {% else %}alert-secondary{% endif %}
+                alert-dismissible fade show mt-3" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form action="{% url 'edit_profile' agent.id %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label for="">First name</label>
+                <input type="text" name="firstname" class="form-control" value="{{ agent.first_name }}"><br>
+                <label for="">Last name</label>
+                <input type="text" name="lastname" class="form-control" value="{{ agent.last_name }}"><br>
+                <label for="">Address</label>
+                <textarea name="address" class="form-control">{{ agent.Address }}</textarea><br>
+                <label for="">Contact</label>
+                <input type="tel" name="contact" id="contact" class="form-control" value="{{ agent.contact }}">
+                <small id="contact-msg"></small>
+                <br>
+                <label for="">Email</label>
+                <input type="email" name="email" id="email" class="form-control" value="{{ agent.email }}">
+                <small id="email-msg"></small>
+
+                <br>
+                <label for="">Username</label>
+                <input type="text" name="username" id="username" class="form-control" value="{{ agent.username }}">
+                <small id="uname-msg"></small>
+                <br>
+                <!-- <label for="">Date of Birth</label>
+                <input type="date" name="dob" class="form-control" value="{{ agent.dob }}"><br> -->
+                <label for="">Area Of Specialisation</label>
+                <select name="specialisation" class="form-select" >
+                    <option value="">Select An Option</option>
+                    {% for s,special in specialisation %}
+                    <option value="{{ s }}" {% if s|stringformat:"s" == agent.specialisation|stringformat:"s" %}selected{% endif %}>{{ special }}</option>
+                    {% endfor %}
+                </select><br>
+                <label for="">Profile Image</label>
+                <img src="{{ agent.profile_image.url }}" alt=""
+                    style="width : 70px; height : 70px; border-radius:15px ;"><br><br>
+
+                <input type="file" name="profile" class="form-control"><br>
+
+                <div class="text-center">
+                    <button id="submit" class="btn btn-success">Save</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+    <script>
+        let pre_username = false
+        document.getElementById('username').addEventListener("keyup", function () {
+            let username = document.getElementById('username').value;
+            let msg = document.getElementById("uname-msg");
+
+            if (username === ''|| username == '{{ agent.username }}') {
+                msg.innerHTML=''
+                pre_username = false;
+                return
+            }
+
+            fetch(`/check_username/?username=${username}`)
+                .then(response => response.json())
+                .then(data => {
+
+                    if (data.exists) {
+                        msg.innerHTML = 'Username already taken !!';
+                        msg.style.color = 'red';
+                    }
+                    else {
+                        msg.innerHTML = 'Username Available';
+                        msg.style.color = 'green';
+                    }
+                });
+        });
+
+        let pre_email = false
+        document.getElementById('email').addEventListener("keyup", function () {
+            let email = document.getElementById('email').value;
+            let msg = document.getElementById("email-msg");
+
+            if (email === ''|| email === '{{ agent.email }}') {
+                msg.innerHTML = ''
+                pre_email = false
+                return;
+            }
+
+            fetch(`/check_email/?email=${email}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        msg.innerHTML = "Email already exists !!";
+                        msg.style.color = 'red';
+                    }
+
+                    else if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]{5,}\.[A-Za-z]{2,}$/.test(email)) {
+                        msg.innerHTML = "Enter a valid Email";
+                        msg.style.color = 'red';
+                    }
+
+                    else {
+                        msg.innerHTML = "Valid!!"
+                        msg.style.color = 'green';
+                    }
+                });
+        });
+
+        let pre_contact = false
+        document.getElementById('contact').addEventListener("keyup", function () {
+            let contact = document.getElementById('contact').value;
+            let msg = document.getElementById('contact-msg');
+
+            if (contact === ''|| contact === '{{ agent.contact }}') {
+                msg.innerHTML = ''
+                pre_contact = false
+                return;
+            }
+
+            fetch(`/check_contact/?contact=${contact}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        msg.innerHTML = 'Contact Number already exists!!'
+                        msg.style.color = 'red';
+                    }
+
+                    else if (!/^\d{10}$/.test(contact)) {
+                        msg.innerHTML = 'Contact must contain 10 digits!!';
+                        msg.style.color = 'red';
+                    }
+                    else {
+                        msg.innerHTML = 'Valid!!';
+                        msg.style.color = 'green';
+                    }
+                })
+        })
+
+        form.addEventListener('submit',function (e){
+            if (pre_username == true || pre_contact == true||pre_email == true){
+                e.preventDefault();
+                alert("Please check your details")
+            }
+        })
+
+    </script>
+
+{% endblock %}

@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div>
+
+    <div class="Client-container">
+
+        <h3 style="text-align: center;">Edit Client</h3>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert 
+                {% if message.tags == 'error' %}alert-danger
+                {% elif message.tags == 'success' %}alert-success
+                {% elif message.tags == 'info' %}alert-info
+                {% else %}alert-secondary{% endif %}
+                alert-dismissible fade show mt-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+
+        <form action="" method="post" enctype="multipart/form-data">
+
+            {% csrf_token %}
+
+            <label for="">Full Name</label>
+            <input type="text" name="fullname" class="form-control" value="{{ client.full_name }}" required>
+
+            <label for="">Address</label>
+            <textarea name="address" class="form-control">{{ client.address }}</textarea><br><br>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label>Email</label>
+                    <input type="email" name="email" class="form-control" id="email" value="{{ client.email }}"
+                        required>
+                    <small id="email-msg"></small>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Contact Number</label>
+                    <input type="tel" name="phone" class="form-control" id="contact" value="{{ client.contact }}"
+                        required>
+                    <small id="contact-msg"></small>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label>Aadhar Number</label>
+                    <input type="number" name="aadhar" class="form-control" id="aadhar" value="{{ client.aadhar }}">
+                    <small id="aadhar-msg"></small>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>PAN Card Number</label>
+                    <input type="text" name="pan" class="form-control" id='pan' value="{{ client.pan }}">
+                    <small id="pan-msg"></small>
+
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label>Occupation</label>
+                    <input type="text" name="job" class="form-control" value="{{ client.job }}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>Monthly Salary</label>
+                    <input type="number" name="salary" class="form-control" value="{{ client.salary }}" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="">Educational qualification</label>
+                    <select name="qualification" class="form-control" required>
+                        <option value=""> Select a Qualification </option>
+                        {% for id,qual in qualification %}
+                        <!-- <option value="{{ id }}">{{ qual }}</option> -->
+                        <option value="{{ id }}" {% if id == client.qualification %}selected{% endif %}>{{ qual }}
+                        </option>
+
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>Martial Status</label><br>
+                    <input type="radio" name="status" class="form-check-input" value="Unmarried" required {% if client.status == 'Unmarried' %}checked{% endif %}>Unmarried
+                    <input type="radio" name="status" class="form-check-input" value="Married" required {% if client.status == 'Married' %}checked{% endif %}>Married
+                </div>
+            </div>
+
+            <label for="">Campaign</label>
+            <select name="campaign" id="" class="form-control">
+                <option value="">Select Campaign</option>
+                {% for camp in campaign %}
+                <option value="{{ camp.id }}" {% if client.campaign and camp.id == client.campaign.id %}selected{% endif %}>{{ camp }}</option>
+                {% endfor %}
+            </select><br><br>
+
+            <label for="">Are you interested in making a purchase in this campaign?</label>
+            <input type="radio" name="interest" class="form-check-input" value="Yes" required {% if client.interest == 'Yes' %}checked{% endif %}>Yes
+            <input type="radio" name="interest" class="form-check-input" value="No" required {% if client.interest == 'No' %}checked{% endif %}>No
+            <br><br>
+
+            <!-- <input type="hidden" name="camp_name" value="{{ campaign.id }}"> -->
+
+            <label for="">Feedback on your experience with the agent</label>
+            <textarea name="feedback_agent" class="form-control">{{ client.agent_feedback }}</textarea><br><br>
+
+            <label for="">Overall feedback on the campaign</label>
+            <textarea name="feedback" class="form-control">{{ client.feedback }}</textarea><br><br>
+
+            <div class="text-center">
+                <button class="btn btn-success" style="text-align: center;">Add</button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+    let pre_aadhar = false
+    document.getElementById('aadhar').addEventListener("keyup", function () {
+            let aadhar = document.getElementById('aadhar').value;
+            let msg = document.getElementById("aadhar-msg");
+
+            if (aadhar==""|| aadhar == "{{ client.aadhar }}"){
+                msg.innerHTML = ''
+                pre_aadhar = false
+                return                
+            }
+
+            fetch(`/check_aadhar/?aadhar=${aadhar}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists){
+                        msg.innerHTML='User with this already added'
+                        msg.style.color = 'red'
+                    } 
+                    else if (aadhar.length !== 12) {
+                        msg.innerHTML = 'It must contain only 12 numbers'
+                        msg.style.color = 'red'
+                    }
+                    else{
+                        msg.innerHTML='Valid'
+                        msg.style.color='green'
+                    }
+                });
+        });
+
+        let pre_pan = false
+        document.getElementById('pan').addEventListener("keyup", function () {
+            let pan = document.getElementById('pan').value;
+            let msg = document.getElementById("pan-msg");
+            
+            if (pan==""||pan == "{{ client.pan }}"){
+                msg.innerHTML = ''
+                pre_pan = false
+                return                
+            }
+
+            fetch(`/check_pan/?pan=${pan}`)
+                .then(response => response.json())
+                .then(data => {
+
+
+                    if (data.exists) {
+                        msg.innerHTML = "PAN number already exists !!";
+                        msg.style.color = 'red';
+                    }
+
+                    else if (pan.length !== 10){
+                        msg.innerHTML = "PAN number needs 10 characters"
+                        msg.style.color = 'red'
+                    }
+
+                    else if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan)) {
+                        msg.innerHTML = "Enter a valid PAN number";
+                        msg.style.color = 'red';
+                    }
+
+                    else {
+                        msg.innerHTML = "Valid!!"
+                        msg.style.color = 'green';
+                    }
+                });
+        });
+
+
+    let pre_email = false
+    document.getElementById('email').addEventListener("keyup", function () {
+        let email = document.getElementById('email').value;
+        let msg = document.getElementById("email-msg");
+
+        if (email === '' || email === '{{ client.email }}') {
+            msg.innerHTML = ''
+            pre_email = false
+            return
+        }
+
+
+        fetch(`/check_client_email/?email=${email}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Function running");
+
+
+                if (data.exists) {
+                    msg.innerHTML = "Email already exists !!";
+                    msg.style.color = 'red';
+                }
+
+                else if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]{5,}\.[A-Za-z]{2,}$/.test(email)) {
+                    msg.innerHTML = "Enter a valid Email";
+                    msg.style.color = 'red';
+                }
+
+                else {
+                    msg.innerHTML = "Valid!!"
+                    msg.style.color = 'green';
+                }
+            });
+    });
+
+    let pre_contact = false
+    document.getElementById('contact').addEventListener("keyup", function () {
+        let contact = document.getElementById('contact').value;
+        let msg = document.getElementById('contact-msg');
+
+        if (contact === "" || contact === '{{ client.contact }}') {
+            msg.innerHTML = ''
+            pre_contact = false
+            return
+        }
+
+        fetch(`/check_client_contact/?contact=${contact}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    msg.innerHTML = 'Contact Number already exists!!'
+                    msg.style.color = 'red';
+                }
+
+                else if (!/^\d{10}$/.test(contact)) {
+                    msg.innerHTML = 'Contact must contain 10 digits!!';
+                    msg.style.color = 'red';
+                }
+                else {
+                    msg.innerHTML = 'Valid!!';
+                    msg.style.color = 'green';
+                }
+            })
+    })
+</script>
+
+{% endblock %}
